@@ -36,7 +36,7 @@ namespace reestr
 
 		private MenuStrip menuStrip1;
 
-		private DataGridView dataGridView1;
+		private DataGridView dgvInstructionsGrid;
 
 		private ToolStripMenuItem файлToolStripMenuItem;
 
@@ -73,8 +73,11 @@ namespace reestr
 		private System.Windows.Forms.Button btnWord;
 
 		private System.Windows.Forms.Label lblQuantity;
-
-		private System.Windows.Forms.Button btnAllRecs;
+        private ContextMenuStrip cmsChoose;
+        private ToolStripMenuItem tsmiChooseAll;
+        private ToolStripMenuItem tsmiUndoChoose;
+        private ToolStripMenuItem tsmiBackup;
+        private System.Windows.Forms.Button btnAllRecs;
 
 		static Form1()
 		{
@@ -115,7 +118,7 @@ namespace reestr
 				(new Add()).ShowDialog();
 				if (Form1.ok)
 				{
-					this.dataGridView1.DataSource = Form1.dt;
+					this.dgvInstructionsGrid.DataSource = Form1.dt;
 					Form1.dt.WriteXml("data.xml");
 				}
 			}
@@ -124,13 +127,13 @@ namespace reestr
 				MessageBox.Show(exception.Message);
 			}
 			Form1.ok = false;
-			int count = this.dataGridView1.Rows.Count - 1;
+			int count = this.dgvInstructionsGrid.Rows.Count - 1;
 			this.lblQuantity.Text = string.Concat("Записей: ", count.ToString());
 		}
 
 		private void btnDelete_Click(object sender, EventArgs e)
 		{
-			Form1.numberOfInstr = this.dataGridView1.Rows[this.dataGridView1.SelectedCells[0].RowIndex].Cells["number"].Value.ToString();
+			Form1.numberOfInstr = this.dgvInstructionsGrid.Rows[this.dgvInstructionsGrid.SelectedCells[0].RowIndex].Cells["number"].Value.ToString();
 			for (int i = 0; i < Form1.dt.Rows.Count; i++)
 			{
 				if (Form1.numberOfInstr == Form1.dt.Rows[i].ItemArray[0].ToString())
@@ -139,9 +142,9 @@ namespace reestr
 					Form1.dt.Rows.Remove(this.dr);
 				}
 			}
-			this.dataGridView1.DataSource = Form1.dt;
+			this.dgvInstructionsGrid.DataSource = Form1.dt;
 			Form1.dt.WriteXml("data.xml");
-			int count = this.dataGridView1.Rows.Count - 1;
+			int count = this.dgvInstructionsGrid.Rows.Count - 1;
 			this.lblQuantity.Text = string.Concat("Записей: ", count.ToString());
 		}
 
@@ -152,7 +155,7 @@ namespace reestr
 			bool flag1;
 			System.Windows.Forms.DialogResult dialogResult1;
 			Form1.editMode = true;
-			Form1.numberOfInstr = this.dataGridView1.Rows[this.dataGridView1.SelectedCells[0].RowIndex].Cells["id"].Value.ToString();
+			Form1.numberOfInstr = this.dgvInstructionsGrid.Rows[this.dgvInstructionsGrid.SelectedCells[0].RowIndex].Cells["id"].Value.ToString();
 			this.dr = null;
 			int num = 0;
 			while (num < Form1.dt.Rows.Count)
@@ -201,14 +204,14 @@ namespace reestr
 				if (newDate1.ShowForm("Дата согласования"))
 				{
 					Form1.dt.Rows[Form1.rowInd]["dateOfConcor"] = NewDate.val;
-					this.dataGridView1.DataSource = Form1.dt;
+					this.dgvInstructionsGrid.DataSource = Form1.dt;
 					Form1.dt.WriteXml("data.xml");
 					try
 					{
 						dialogResult = (new Add()).ShowDialog();
 						if (Form1.ok)
 						{
-							this.dataGridView1.DataSource = Form1.dt;
+							this.dgvInstructionsGrid.DataSource = Form1.dt;
 							Form1.dt.WriteXml("data.xml");
 						}
 					}
@@ -225,7 +228,7 @@ namespace reestr
 				dialogResult = (new Add()).ShowDialog();
 				if (Form1.ok)
 				{
-					this.dataGridView1.DataSource = Form1.dt;
+					this.dgvInstructionsGrid.DataSource = Form1.dt;
 					Form1.dt.WriteXml("data.xml");
 				}
 			}
@@ -236,12 +239,12 @@ namespace reestr
 			return;
 		Label1:
 			Form1.dt.Rows[Form1.rowInd]["dateOfReg"] = NewDate.val;
-			this.dataGridView1.DataSource = Form1.dt;
+			this.dgvInstructionsGrid.DataSource = Form1.dt;
 			Form1.dt.WriteXml("data.xml");
 			goto Label4;
 		Label2:
 			Form1.dt.Rows[Form1.rowInd]["dateOfConf"] = NewDate.val;
-			this.dataGridView1.DataSource = Form1.dt;
+			this.dgvInstructionsGrid.DataSource = Form1.dt;
 			Form1.dt.WriteXml("data.xml");
 			goto Label5;
 		}
@@ -253,7 +256,7 @@ namespace reestr
 
 		private void btnOpen_Click(object sender, EventArgs e)
 		{
-			if (this.dataGridView1.SelectedCells.Count <= 0)
+			if (this.dgvInstructionsGrid.SelectedCells.Count <= 0)
 			{
 				MessageBox.Show("Выберите файл для открытия!");
 			}
@@ -261,9 +264,9 @@ namespace reestr
 			{
 				try
 				{
-					int rowIndex = this.dataGridView1.SelectedCells[0].RowIndex;
-					string str = string.Concat(System.Windows.Forms.Application.StartupPath, "\\pdffiles\\", this.dataGridView1["path", rowIndex].Value.ToString());
-					if ((this.dataGridView1["path", rowIndex].Value.ToString() == "" ? true : !File.Exists(str)))
+					int rowIndex = this.dgvInstructionsGrid.SelectedCells[0].RowIndex;
+					string str = string.Concat(System.Windows.Forms.Application.StartupPath, "\\pdffiles\\", this.dgvInstructionsGrid["path", rowIndex].Value.ToString());
+					if ((this.dgvInstructionsGrid["path", rowIndex].Value.ToString() == "" ? true : !File.Exists(str)))
 					{
 						MessageBox.Show("Нет связанного с инструкцией файла!");
 					}
@@ -292,8 +295,8 @@ namespace reestr
 				lower = this.tbSearch.Text.ToLower();
 			}
 			EnumerableRowCollection<DataRow> dataRows = Form1.dt.AsEnumerable().Where<DataRow>((DataRow search) => search.Field<string>("number").ToLower().Contains(lower) | search.Field<string>("type").ToLower().Contains(lower) | search.Field<string>("name").ToLower().Contains(lower) | search.Field<string>("status").ToLower().Contains(lower) | search.ItemArray[4].ToString().ToLower().Contains(lower) | search.Field<string>("numberOfReg").ToLower().Contains(lower) | search.Field<string>("org").ToLower().Contains(lower) | search.Field<string>("conf").ToLower().Contains(lower) | search.Field<string>("dateOfConf").ToLower().ToString().Contains(lower) | search.Field<string>("numOfDoc").ToLower().Contains(lower) | search.Field<string>("concor").ToLower().Contains(lower) | search.Field<string>("dateOfConcor").ToLower().ToString().Contains(lower) | search.Field<string>("year").ToLower().Contains(lower) | search.Field<string>("pages").ToLower().Contains(lower) | search.Field<string>("place").ToLower().Contains(lower) | search.Field<string>("key").ToLower().Contains(lower) | search.Field<string>("text").ToLower().Contains(lower) | search.Field<string>("annot").ToLower().Contains(lower)).OrderBy<DataRow, string>((DataRow search) => search.Field<string>("number"));
-			this.dataGridView1.DataSource = dataRows.AsDataView<DataRow>();
-			int count = this.dataGridView1.Rows.Count - 1;
+			this.dgvInstructionsGrid.DataSource = dataRows.AsDataView<DataRow>();
+			int count = this.dgvInstructionsGrid.Rows.Count - 1;
 			this.lblQuantity.Text = string.Concat("Записей: ", count.ToString());
 		}
 
@@ -310,13 +313,13 @@ namespace reestr
 					_Document __Document = applicationClass.Documents.Add(ref value, ref value, ref value, ref value);
 					Paragraph paragraph = __Document.Content.Paragraphs.Add(ref value);
 					string str = "";
-					for (int i = 0; i < this.dataGridView1.Rows.Count - 1; i++)
+					for (int i = 0; i < this.dgvInstructionsGrid.Rows.Count - 1; i++)
 					{
-						if ((bool)this.dataGridView1.Rows[i].Cells["check"].EditedFormattedValue)
+						if ((bool)this.dgvInstructionsGrid.Rows[i].Cells["check"].EditedFormattedValue)
 						{
-							for (int j = 1; j < this.dataGridView1.ColumnCount - 1; j++)
+							for (int j = 1; j < this.dgvInstructionsGrid.ColumnCount - 1; j++)
 							{
-								str = string.Concat(new string[] { str, this.dataGridView1.Columns[j].HeaderText, ": ", this.dataGridView1[j, i].Value.ToString(), "\n" });
+								str = string.Concat(new string[] { str, this.dgvInstructionsGrid.Columns[j].HeaderText, ": ", this.dgvInstructionsGrid[j, i].Value.ToString(), "\n" });
 							}
 							str = string.Concat(str, "\n\n");
 						}
@@ -362,7 +365,7 @@ namespace reestr
 					DataSet dataSet = new DataSet();
 					dataSet.ReadXml(xmlReader);
 					Form1.dt = dataSet.Tables[0];
-					this.dataGridView1.DataSource = Form1.dt;
+					this.dgvInstructionsGrid.DataSource = Form1.dt;
 					Form1.idGen = Convert.ToInt32(Form1.dt.Rows[Form1.dt.Rows.Count - 1].ItemArray[Form1.dt.Columns.Count - 1]);
 					xmlReader.Close();
 				}
@@ -370,36 +373,36 @@ namespace reestr
 				{
 					Name = "check"
 				};
-				this.dataGridView1.Columns.Add(dataGridViewCheckBoxColumn);
-				this.dataGridView1.Columns["check"].DisplayIndex = 0;
-				this.dataGridView1.Columns["check"].HeaderText = "";
-				this.dataGridView1.Columns["check"].Width = 100;
-				this.dataGridView1.Columns["number"].HeaderText = "Инв. № в СИФ";
-				this.dataGridView1.Columns["type"].HeaderText = "Тип документа";
-				this.dataGridView1.Columns["name"].HeaderText = "Название";
-				this.dataGridView1.Columns["status"].HeaderText = "Статус";
-				this.dataGridView1.Columns["dateOfReg"].HeaderText = "Дата регистрации МЮ";
-				this.dataGridView1.Columns["numberOfReg"].HeaderText = "№ регистрации МЮ";
-				this.dataGridView1.Columns["org"].HeaderText = "Организация-разработчик";
-				this.dataGridView1.Columns["conf"].HeaderText = "Утверждение";
-				this.dataGridView1.Columns["dateOfConf"].HeaderText = "Дата утверждения";
-				this.dataGridView1.Columns["numOfDoc"].HeaderText = "№ документа";
-				this.dataGridView1.Columns["concor"].HeaderText = "Согласование";
-				this.dataGridView1.Columns["dateOfConcor"].HeaderText = "Дата согласования";
-				this.dataGridView1.Columns["year"].HeaderText = "Год";
-				this.dataGridView1.Columns["pages"].HeaderText = "Кол-во страниц";
-				this.dataGridView1.Columns["place"].HeaderText = "Место издания";
-				this.dataGridView1.Columns["key"].HeaderText = "Ключевые слова";
-				this.dataGridView1.Columns["text"].HeaderText = "Текст";
-				this.dataGridView1.Columns["annot"].HeaderText = "Примечание";
-				this.dataGridView1.Columns["path"].HeaderText = "Файл";
-				this.dataGridView1.Columns["id"].Visible = false;
-				for (int i = 0; i < this.dataGridView1.Columns.Count - 1; i++)
+				this.dgvInstructionsGrid.Columns.Add(dataGridViewCheckBoxColumn);
+				this.dgvInstructionsGrid.Columns["check"].DisplayIndex = 0;
+				this.dgvInstructionsGrid.Columns["check"].HeaderText = "";
+				this.dgvInstructionsGrid.Columns["check"].Width = 100;
+				this.dgvInstructionsGrid.Columns["number"].HeaderText = "Инв. № в СИФ";
+				this.dgvInstructionsGrid.Columns["type"].HeaderText = "Тип документа";
+				this.dgvInstructionsGrid.Columns["name"].HeaderText = "Название";
+				this.dgvInstructionsGrid.Columns["status"].HeaderText = "Статус";
+				this.dgvInstructionsGrid.Columns["dateOfReg"].HeaderText = "Дата регистрации МЮ";
+				this.dgvInstructionsGrid.Columns["numberOfReg"].HeaderText = "№ регистрации МЮ";
+				this.dgvInstructionsGrid.Columns["org"].HeaderText = "Организация-разработчик";
+				this.dgvInstructionsGrid.Columns["conf"].HeaderText = "Утверждение";
+				this.dgvInstructionsGrid.Columns["dateOfConf"].HeaderText = "Дата утверждения";
+				this.dgvInstructionsGrid.Columns["numOfDoc"].HeaderText = "№ документа";
+				this.dgvInstructionsGrid.Columns["concor"].HeaderText = "Согласование";
+				this.dgvInstructionsGrid.Columns["dateOfConcor"].HeaderText = "Дата согласования";
+				this.dgvInstructionsGrid.Columns["year"].HeaderText = "Год";
+				this.dgvInstructionsGrid.Columns["pages"].HeaderText = "Кол-во страниц";
+				this.dgvInstructionsGrid.Columns["place"].HeaderText = "Место издания";
+				this.dgvInstructionsGrid.Columns["key"].HeaderText = "Ключевые слова";
+				this.dgvInstructionsGrid.Columns["text"].HeaderText = "Текст";
+				this.dgvInstructionsGrid.Columns["annot"].HeaderText = "Примечание";
+				this.dgvInstructionsGrid.Columns["path"].HeaderText = "Файл";
+				this.dgvInstructionsGrid.Columns["id"].Visible = false;
+				for (int i = 0; i < this.dgvInstructionsGrid.Columns.Count - 1; i++)
 				{
-					this.dataGridView1.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-					this.dataGridView1.Columns[i].ReadOnly = true;
+					this.dgvInstructionsGrid.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+					this.dgvInstructionsGrid.Columns[i].ReadOnly = true;
 				}
-				int count = this.dataGridView1.Rows.Count - 1;
+				int count = this.dgvInstructionsGrid.Rows.Count - 1;
 				this.lblQuantity.Text = string.Concat("Записей: ", count.ToString());
 			}
 			catch (Exception exception)
@@ -410,186 +413,303 @@ namespace reestr
 
 		private void InitializeComponent()
 		{
-			this.panel1 = new Panel();
-			this.btnAllRecs = new System.Windows.Forms.Button();
-			this.lblQuantity = new System.Windows.Forms.Label();
-			this.btnWord = new System.Windows.Forms.Button();
-			this.tbSearch = new System.Windows.Forms.TextBox();
-			this.btnSearch = new System.Windows.Forms.Button();
-			this.btnDelete = new System.Windows.Forms.Button();
-			this.btnEdit = new System.Windows.Forms.Button();
-			this.btnOpen = new System.Windows.Forms.Button();
-			this.btnExit = new System.Windows.Forms.Button();
-			this.btnAdd = new System.Windows.Forms.Button();
-			this.menuStrip1 = new MenuStrip();
-			this.файлToolStripMenuItem = new ToolStripMenuItem();
-			this.сохранитьРеестрToolStripMenuItem = new ToolStripMenuItem();
-			this.tsmiImport = new ToolStripMenuItem();
-			this.toolStripSeparator1 = new ToolStripSeparator();
-			this.выходToolStripMenuItem = new ToolStripMenuItem();
-			this.правкаToolStripMenuItem = new ToolStripMenuItem();
-			this.добавитьToolStripMenuItem = new ToolStripMenuItem();
-			this.изменитьToolStripMenuItem = new ToolStripMenuItem();
-			this.удалитьToolStripMenuItem = new ToolStripMenuItem();
-			this.dataGridView1 = new DataGridView();
-			this.panel1.SuspendLayout();
-			this.menuStrip1.SuspendLayout();
-			((ISupportInitialize)this.dataGridView1).BeginInit();
-			base.SuspendLayout();
-			this.panel1.Controls.Add(this.btnAllRecs);
-			this.panel1.Controls.Add(this.lblQuantity);
-			this.panel1.Controls.Add(this.btnWord);
-			this.panel1.Controls.Add(this.tbSearch);
-			this.panel1.Controls.Add(this.btnSearch);
-			this.panel1.Controls.Add(this.btnDelete);
-			this.panel1.Controls.Add(this.btnEdit);
-			this.panel1.Controls.Add(this.btnOpen);
-			this.panel1.Controls.Add(this.btnExit);
-			this.panel1.Controls.Add(this.btnAdd);
-			this.panel1.Dock = DockStyle.Bottom;
-			this.panel1.Location = new System.Drawing.Point(0, 399);
-			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(958, 38);
-			this.panel1.TabIndex = 0;
-			this.btnAllRecs.Anchor = AnchorStyles.Right;
-			this.btnAllRecs.Location = new System.Drawing.Point(790, 8);
-			this.btnAllRecs.Name = "btnAllRecs";
-			this.btnAllRecs.Size = new System.Drawing.Size(75, 23);
-			this.btnAllRecs.TabIndex = 13;
-			this.btnAllRecs.Text = "Все записи";
-			this.btnAllRecs.UseVisualStyleBackColor = true;
-			this.btnAllRecs.Click += new EventHandler(this.btnSearch_Click);
-			this.lblQuantity.Anchor = AnchorStyles.Right;
-			this.lblQuantity.AutoSize = true;
-			this.lblQuantity.Location = new System.Drawing.Point(795, 13);
-			this.lblQuantity.Name = "lblQuantity";
-			this.lblQuantity.Size = new System.Drawing.Size(0, 13);
-			this.lblQuantity.TabIndex = 12;
-			this.btnWord.Anchor = AnchorStyles.Right;
-			this.btnWord.Location = new System.Drawing.Point(430, 8);
-			this.btnWord.Name = "btnWord";
-			this.btnWord.Size = new System.Drawing.Size(75, 23);
-			this.btnWord.TabIndex = 11;
-			this.btnWord.Text = "Word";
-			this.btnWord.UseVisualStyleBackColor = true;
-			this.btnWord.Click += new EventHandler(this.btnWord_Click);
-			this.tbSearch.Anchor = AnchorStyles.Right;
-			this.tbSearch.Location = new System.Drawing.Point(594, 10);
-			this.tbSearch.Name = "tbSearch";
-			this.tbSearch.Size = new System.Drawing.Size(190, 20);
-			this.tbSearch.TabIndex = 10;
-			this.btnSearch.Anchor = AnchorStyles.Right;
-			this.btnSearch.Location = new System.Drawing.Point(511, 8);
-			this.btnSearch.Name = "btnSearch";
-			this.btnSearch.Size = new System.Drawing.Size(77, 23);
-			this.btnSearch.TabIndex = 9;
-			this.btnSearch.Text = "Поиск";
-			this.btnSearch.UseVisualStyleBackColor = true;
-			this.btnSearch.Click += new EventHandler(this.btnSearch_Click);
-			this.btnDelete.Location = new System.Drawing.Point(193, 8);
-			this.btnDelete.Name = "btnDelete";
-			this.btnDelete.Size = new System.Drawing.Size(75, 23);
-			this.btnDelete.TabIndex = 8;
-			this.btnDelete.Text = "Удалить";
-			this.btnDelete.UseVisualStyleBackColor = true;
-			this.btnDelete.Click += new EventHandler(this.btnDelete_Click);
-			this.btnEdit.Location = new System.Drawing.Point(93, 8);
-			this.btnEdit.Name = "btnEdit";
-			this.btnEdit.Size = new System.Drawing.Size(94, 23);
-			this.btnEdit.TabIndex = 7;
-			this.btnEdit.Text = "Редактировать";
-			this.btnEdit.UseVisualStyleBackColor = true;
-			this.btnEdit.Click += new EventHandler(this.btnEdit_Click);
-			this.btnOpen.Anchor = AnchorStyles.Right;
-			this.btnOpen.Location = new System.Drawing.Point(302, 8);
-			this.btnOpen.Name = "btnOpen";
-			this.btnOpen.Size = new System.Drawing.Size(122, 23);
-			this.btnOpen.TabIndex = 6;
-			this.btnOpen.Text = "Открыть инструкцию";
-			this.btnOpen.UseVisualStyleBackColor = true;
-			this.btnOpen.Click += new EventHandler(this.btnOpen_Click);
-			this.btnExit.Anchor = AnchorStyles.Right;
-			this.btnExit.Location = new System.Drawing.Point(871, 8);
-			this.btnExit.Name = "btnExit";
-			this.btnExit.Size = new System.Drawing.Size(75, 23);
-			this.btnExit.TabIndex = 5;
-			this.btnExit.Text = "Выход";
-			this.btnExit.UseVisualStyleBackColor = true;
-			this.btnExit.Click += new EventHandler(this.btnExit_Click);
-			this.btnAdd.Location = new System.Drawing.Point(12, 8);
-			this.btnAdd.Name = "btnAdd";
-			this.btnAdd.Size = new System.Drawing.Size(75, 23);
-			this.btnAdd.TabIndex = 3;
-			this.btnAdd.Text = "Добавить";
-			this.btnAdd.UseVisualStyleBackColor = true;
-			this.btnAdd.Click += new EventHandler(this.btnAdd_Click);
-			this.menuStrip1.Items.AddRange(new ToolStripItem[] { this.файлToolStripMenuItem, this.правкаToolStripMenuItem });
-			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-			this.menuStrip1.Name = "menuStrip1";
-			this.menuStrip1.Size = new System.Drawing.Size(958, 24);
-			this.menuStrip1.TabIndex = 1;
-			this.menuStrip1.Text = "Файл";
-			this.файлToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { this.сохранитьРеестрToolStripMenuItem, this.tsmiImport, this.toolStripSeparator1, this.выходToolStripMenuItem });
-			this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
-			this.файлToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
-			this.файлToolStripMenuItem.Text = "Файл";
-			this.сохранитьРеестрToolStripMenuItem.Name = "сохранитьРеестрToolStripMenuItem";
-			this.сохранитьРеестрToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-			this.сохранитьРеестрToolStripMenuItem.Text = "Сохранить реестр";
-			this.сохранитьРеестрToolStripMenuItem.Visible = false;
-			this.tsmiImport.Enabled = false;
-			this.tsmiImport.Name = "tsmiImport";
-			this.tsmiImport.Size = new System.Drawing.Size(205, 22);
-			this.tsmiImport.Text = "Импорт данных из Excel";
-			this.tsmiImport.Visible = false;
-			this.tsmiImport.Click += new EventHandler(this.tsmiImport_Click);
-			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(202, 6);
-			this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
-			this.выходToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-			this.выходToolStripMenuItem.Text = "Выход";
-			this.выходToolStripMenuItem.Click += new EventHandler(this.btnExit_Click);
-			this.правкаToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { this.добавитьToolStripMenuItem, this.изменитьToolStripMenuItem, this.удалитьToolStripMenuItem });
-			this.правкаToolStripMenuItem.Name = "правкаToolStripMenuItem";
-			this.правкаToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
-			this.правкаToolStripMenuItem.Text = "Правка";
-			this.добавитьToolStripMenuItem.Name = "добавитьToolStripMenuItem";
-			this.добавитьToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
-			this.добавитьToolStripMenuItem.Text = "Добавить";
-			this.добавитьToolStripMenuItem.Click += new EventHandler(this.btnAdd_Click);
-			this.изменитьToolStripMenuItem.Name = "изменитьToolStripMenuItem";
-			this.изменитьToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
-			this.изменитьToolStripMenuItem.Text = "Редактировать";
-			this.изменитьToolStripMenuItem.Click += new EventHandler(this.btnEdit_Click);
-			this.удалитьToolStripMenuItem.Name = "удалитьToolStripMenuItem";
-			this.удалитьToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
-			this.удалитьToolStripMenuItem.Text = "Удалить";
-			this.удалитьToolStripMenuItem.Click += new EventHandler(this.btnDelete_Click);
-			this.dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.dataGridView1.Dock = DockStyle.Fill;
-			this.dataGridView1.Location = new System.Drawing.Point(0, 24);
-			this.dataGridView1.MultiSelect = false;
-			this.dataGridView1.Name = "dataGridView1";
-			this.dataGridView1.Size = new System.Drawing.Size(958, 375);
-			this.dataGridView1.TabIndex = 2;
-			base.AutoScaleDimensions = new SizeF(6f, 13f);
-			base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			base.ClientSize = new System.Drawing.Size(958, 437);
-			base.Controls.Add(this.dataGridView1);
-			base.Controls.Add(this.panel1);
-			base.Controls.Add(this.menuStrip1);
-			base.MainMenuStrip = this.menuStrip1;
-			this.MinimumSize = new System.Drawing.Size(974, 476);
-			base.Name = "Form1";
-			this.Text = "ИПС НОРМАТИВ";
-			base.Load += new EventHandler(this.Form1_Load);
-			this.panel1.ResumeLayout(false);
-			this.panel1.PerformLayout();
-			this.menuStrip1.ResumeLayout(false);
-			this.menuStrip1.PerformLayout();
-			((ISupportInitialize)this.dataGridView1).EndInit();
-			base.ResumeLayout(false);
-			base.PerformLayout();
+            this.components = new System.ComponentModel.Container();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.btnAllRecs = new System.Windows.Forms.Button();
+            this.lblQuantity = new System.Windows.Forms.Label();
+            this.btnWord = new System.Windows.Forms.Button();
+            this.tbSearch = new System.Windows.Forms.TextBox();
+            this.btnSearch = new System.Windows.Forms.Button();
+            this.btnDelete = new System.Windows.Forms.Button();
+            this.btnEdit = new System.Windows.Forms.Button();
+            this.btnOpen = new System.Windows.Forms.Button();
+            this.btnExit = new System.Windows.Forms.Button();
+            this.btnAdd = new System.Windows.Forms.Button();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.сохранитьРеестрToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiImport = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.правкаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.добавитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.изменитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.удалитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dgvInstructionsGrid = new System.Windows.Forms.DataGridView();
+            this.cmsChoose = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tsmiChooseAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiUndoChoose = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiBackup = new System.Windows.Forms.ToolStripMenuItem();
+            this.panel1.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvInstructionsGrid)).BeginInit();
+            this.cmsChoose.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.btnAllRecs);
+            this.panel1.Controls.Add(this.lblQuantity);
+            this.panel1.Controls.Add(this.btnWord);
+            this.panel1.Controls.Add(this.tbSearch);
+            this.panel1.Controls.Add(this.btnSearch);
+            this.panel1.Controls.Add(this.btnDelete);
+            this.panel1.Controls.Add(this.btnEdit);
+            this.panel1.Controls.Add(this.btnOpen);
+            this.panel1.Controls.Add(this.btnExit);
+            this.panel1.Controls.Add(this.btnAdd);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel1.Location = new System.Drawing.Point(0, 399);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(958, 38);
+            this.panel1.TabIndex = 0;
+            // 
+            // btnAllRecs
+            // 
+            this.btnAllRecs.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnAllRecs.Location = new System.Drawing.Point(790, 8);
+            this.btnAllRecs.Name = "btnAllRecs";
+            this.btnAllRecs.Size = new System.Drawing.Size(75, 23);
+            this.btnAllRecs.TabIndex = 13;
+            this.btnAllRecs.Text = "Все записи";
+            this.btnAllRecs.UseVisualStyleBackColor = true;
+            this.btnAllRecs.Click += new System.EventHandler(this.btnSearch_Click);
+            // 
+            // lblQuantity
+            // 
+            this.lblQuantity.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblQuantity.AutoSize = true;
+            this.lblQuantity.Location = new System.Drawing.Point(795, 13);
+            this.lblQuantity.Name = "lblQuantity";
+            this.lblQuantity.Size = new System.Drawing.Size(0, 13);
+            this.lblQuantity.TabIndex = 12;
+            // 
+            // btnWord
+            // 
+            this.btnWord.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnWord.Location = new System.Drawing.Point(430, 8);
+            this.btnWord.Name = "btnWord";
+            this.btnWord.Size = new System.Drawing.Size(75, 23);
+            this.btnWord.TabIndex = 11;
+            this.btnWord.Text = "Word";
+            this.btnWord.UseVisualStyleBackColor = true;
+            this.btnWord.Click += new System.EventHandler(this.btnWord_Click);
+            // 
+            // tbSearch
+            // 
+            this.tbSearch.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.tbSearch.Location = new System.Drawing.Point(594, 10);
+            this.tbSearch.Name = "tbSearch";
+            this.tbSearch.Size = new System.Drawing.Size(190, 20);
+            this.tbSearch.TabIndex = 10;
+            // 
+            // btnSearch
+            // 
+            this.btnSearch.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnSearch.Location = new System.Drawing.Point(511, 8);
+            this.btnSearch.Name = "btnSearch";
+            this.btnSearch.Size = new System.Drawing.Size(77, 23);
+            this.btnSearch.TabIndex = 9;
+            this.btnSearch.Text = "Поиск";
+            this.btnSearch.UseVisualStyleBackColor = true;
+            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+            // 
+            // btnDelete
+            // 
+            this.btnDelete.Location = new System.Drawing.Point(193, 8);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(75, 23);
+            this.btnDelete.TabIndex = 8;
+            this.btnDelete.Text = "Удалить";
+            this.btnDelete.UseVisualStyleBackColor = true;
+            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
+            // 
+            // btnEdit
+            // 
+            this.btnEdit.Location = new System.Drawing.Point(93, 8);
+            this.btnEdit.Name = "btnEdit";
+            this.btnEdit.Size = new System.Drawing.Size(94, 23);
+            this.btnEdit.TabIndex = 7;
+            this.btnEdit.Text = "Редактировать";
+            this.btnEdit.UseVisualStyleBackColor = true;
+            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
+            // 
+            // btnOpen
+            // 
+            this.btnOpen.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnOpen.Location = new System.Drawing.Point(302, 8);
+            this.btnOpen.Name = "btnOpen";
+            this.btnOpen.Size = new System.Drawing.Size(122, 23);
+            this.btnOpen.TabIndex = 6;
+            this.btnOpen.Text = "Открыть инструкцию";
+            this.btnOpen.UseVisualStyleBackColor = true;
+            this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+            // 
+            // btnExit
+            // 
+            this.btnExit.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.btnExit.Location = new System.Drawing.Point(871, 8);
+            this.btnExit.Name = "btnExit";
+            this.btnExit.Size = new System.Drawing.Size(75, 23);
+            this.btnExit.TabIndex = 5;
+            this.btnExit.Text = "Выход";
+            this.btnExit.UseVisualStyleBackColor = true;
+            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
+            // 
+            // btnAdd
+            // 
+            this.btnAdd.Location = new System.Drawing.Point(12, 8);
+            this.btnAdd.Name = "btnAdd";
+            this.btnAdd.Size = new System.Drawing.Size(75, 23);
+            this.btnAdd.TabIndex = 3;
+            this.btnAdd.Text = "Добавить";
+            this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.файлToolStripMenuItem,
+            this.правкаToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(958, 31);
+            this.menuStrip1.TabIndex = 1;
+            this.menuStrip1.Text = "Файл";
+            // 
+            // файлToolStripMenuItem
+            // 
+            this.файлToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiBackup,
+            this.сохранитьРеестрToolStripMenuItem,
+            this.tsmiImport,
+            this.toolStripSeparator1,
+            this.выходToolStripMenuItem});
+            this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
+            this.файлToolStripMenuItem.Size = new System.Drawing.Size(62, 27);
+            this.файлToolStripMenuItem.Text = "Файл";
+            // 
+            // сохранитьРеестрToolStripMenuItem
+            // 
+            this.сохранитьРеестрToolStripMenuItem.Name = "сохранитьРеестрToolStripMenuItem";
+            this.сохранитьРеестрToolStripMenuItem.Size = new System.Drawing.Size(336, 28);
+            this.сохранитьРеестрToolStripMenuItem.Text = "Сохранить реестр";
+            this.сохранитьРеестрToolStripMenuItem.Visible = false;
+            // 
+            // tsmiImport
+            // 
+            this.tsmiImport.Enabled = false;
+            this.tsmiImport.Name = "tsmiImport";
+            this.tsmiImport.Size = new System.Drawing.Size(336, 28);
+            this.tsmiImport.Text = "Импорт данных из Excel";
+            this.tsmiImport.Visible = false;
+            this.tsmiImport.Click += new System.EventHandler(this.tsmiImport_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(333, 6);
+            // 
+            // выходToolStripMenuItem
+            // 
+            this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
+            this.выходToolStripMenuItem.Size = new System.Drawing.Size(336, 28);
+            this.выходToolStripMenuItem.Text = "Выход";
+            this.выходToolStripMenuItem.Click += new System.EventHandler(this.btnExit_Click);
+            // 
+            // правкаToolStripMenuItem
+            // 
+            this.правкаToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.добавитьToolStripMenuItem,
+            this.изменитьToolStripMenuItem,
+            this.удалитьToolStripMenuItem});
+            this.правкаToolStripMenuItem.Name = "правкаToolStripMenuItem";
+            this.правкаToolStripMenuItem.Size = new System.Drawing.Size(79, 27);
+            this.правкаToolStripMenuItem.Text = "Правка";
+            // 
+            // добавитьToolStripMenuItem
+            // 
+            this.добавитьToolStripMenuItem.Name = "добавитьToolStripMenuItem";
+            this.добавитьToolStripMenuItem.Size = new System.Drawing.Size(196, 28);
+            this.добавитьToolStripMenuItem.Text = "Добавить";
+            this.добавитьToolStripMenuItem.Click += new System.EventHandler(this.btnAdd_Click);
+            // 
+            // изменитьToolStripMenuItem
+            // 
+            this.изменитьToolStripMenuItem.Name = "изменитьToolStripMenuItem";
+            this.изменитьToolStripMenuItem.Size = new System.Drawing.Size(196, 28);
+            this.изменитьToolStripMenuItem.Text = "Редактировать";
+            this.изменитьToolStripMenuItem.Click += new System.EventHandler(this.btnEdit_Click);
+            // 
+            // удалитьToolStripMenuItem
+            // 
+            this.удалитьToolStripMenuItem.Name = "удалитьToolStripMenuItem";
+            this.удалитьToolStripMenuItem.Size = new System.Drawing.Size(196, 28);
+            this.удалитьToolStripMenuItem.Text = "Удалить";
+            this.удалитьToolStripMenuItem.Click += new System.EventHandler(this.btnDelete_Click);
+            // 
+            // dgvInstructionsGrid
+            // 
+            this.dgvInstructionsGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvInstructionsGrid.ContextMenuStrip = this.cmsChoose;
+            this.dgvInstructionsGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvInstructionsGrid.Location = new System.Drawing.Point(0, 31);
+            this.dgvInstructionsGrid.MultiSelect = false;
+            this.dgvInstructionsGrid.Name = "dgvInstructionsGrid";
+            this.dgvInstructionsGrid.Size = new System.Drawing.Size(958, 368);
+            this.dgvInstructionsGrid.TabIndex = 2;
+            // 
+            // cmsChoose
+            // 
+            this.cmsChoose.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiChooseAll,
+            this.tsmiUndoChoose});
+            this.cmsChoose.Name = "cmsChoose";
+            this.cmsChoose.Size = new System.Drawing.Size(214, 60);
+            // 
+            // tsmiChooseAll
+            // 
+            this.tsmiChooseAll.Name = "tsmiChooseAll";
+            this.tsmiChooseAll.Size = new System.Drawing.Size(213, 28);
+            this.tsmiChooseAll.Text = "Выбрать все";
+            this.tsmiChooseAll.Click += new System.EventHandler(this.tsmiChooseAll_Click);
+            // 
+            // tsmiUndoChoose
+            // 
+            this.tsmiUndoChoose.Name = "tsmiUndoChoose";
+            this.tsmiUndoChoose.Size = new System.Drawing.Size(213, 28);
+            this.tsmiUndoChoose.Text = "Отменить выбор";
+            this.tsmiUndoChoose.Click += new System.EventHandler(this.tsmiUndoChoose_Click);
+            // 
+            // tsmiBackup
+            // 
+            this.tsmiBackup.Name = "tsmiBackup";
+            this.tsmiBackup.Size = new System.Drawing.Size(336, 28);
+            this.tsmiBackup.Text = "Создать резервную копию базы";
+            this.tsmiBackup.Click += new System.EventHandler(this.tsmiBackup_Click);
+            // 
+            // Form1
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(958, 437);
+            this.Controls.Add(this.dgvInstructionsGrid);
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.menuStrip1);
+            this.MainMenuStrip = this.menuStrip1;
+            this.MinimumSize = new System.Drawing.Size(974, 476);
+            this.Name = "Form1";
+            this.Text = "ИПС НОРМАТИВ";
+            this.Load += new System.EventHandler(this.Form1_Load);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvInstructionsGrid)).EndInit();
+            this.cmsChoose.ResumeLayout(false);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
 		}
 
 		private void tsmiImport_Click(object sender, EventArgs e)
@@ -616,7 +736,7 @@ namespace reestr
 							Form1.dt.Rows.Add(new object[] { strs[0], strs[1], strs[2], strs[3], strs[4], strs[5], strs[6], strs[7], strs[8], strs[9], strs[10], strs[11], strs[12], strs[13], strs[14], strs[15], strs[16], strs[17], "", Form1.idGen });
 							strs.Clear();
 						}
-						this.dataGridView1.DataSource = Form1.dt;
+						this.dgvInstructionsGrid.DataSource = Form1.dt;
 						Form1.dt.WriteXml("data.xml");
 						System.Windows.Forms.Application.DoEvents();
 					}
@@ -631,5 +751,41 @@ namespace reestr
 				}
 			}
 		}
-	}
+
+        private void tsmiChooseAll_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < dgvInstructionsGrid.Rows.Count; i++)
+            {
+                dgvInstructionsGrid.Rows[i].Cells["check"].Value = true;
+            }
+        }
+
+        private void tsmiUndoChoose_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < dgvInstructionsGrid.Rows.Count; i++)
+            {
+                dgvInstructionsGrid.Rows[i].Cells["check"].Value = false;
+                
+            }
+            
+            //Обновить текущую редактируемую ячейку, чтобы отобразить новый статус 
+            dgvInstructionsGrid.RefreshEdit();
+            
+        }
+
+        private void tsmiBackup_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfdBackup = new SaveFileDialog();
+            sfdBackup.Filter = "Backup Files(*.bck)|*.bck";
+            sfdBackup.FileName = "data.bck";
+            if (sfdBackup.ShowDialog() == DialogResult.OK)
+            {
+                MessageBox.Show("Сейчас будет выполнено резервное копирование данных!");
+                string fileText = File.ReadAllText("data.xml");
+                File.WriteAllText(sfdBackup.FileName, fileText);
+                MessageBox.Show("Создание резервной копии успешно завершено!");
+            }
+            
+        }
+    }
 }
