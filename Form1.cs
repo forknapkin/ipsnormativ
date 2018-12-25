@@ -151,8 +151,7 @@ namespace reestr
 		private void btnEdit_Click(object sender, EventArgs e)
 		{
 			System.Windows.Forms.DialogResult dialogResult;
-			bool flag;
-			bool flag1;
+			bool flag, flag1, flagMU;
 			System.Windows.Forms.DialogResult dialogResult1;
 			Form1.editMode = true;
 			Form1.numberOfInstr = this.dgvInstructionsGrid.Rows[this.dgvInstructionsGrid.SelectedCells[0].RowIndex].Cells["id"].Value.ToString();
@@ -173,57 +172,57 @@ namespace reestr
 			}
 			Form1.rowInd = Form1.dt.Rows.IndexOf(this.dr);
 			DateTime dateTime = new DateTime();
-			if ((!(this.dr.ItemArray[4].ToString() != "") || !(this.dr.ItemArray[4].ToString() != "без регистрации") ? false : !DateTime.TryParse(this.dr.ItemArray[4].ToString(), out dateTime)))
-			{
-				NewDate newDate = new NewDate();
-				newDate.tbCurVal.Text = this.dr.ItemArray[4].ToString();
-				if (newDate.ShowForm("Дата регистрации МЮ"))
-				{
-					goto Label1;
-				}
-				return;
-			}
-		Label4:
-			flag = (this.dr.ItemArray[8].ToString() == "" ? false : !DateTime.TryParse(this.dr.ItemArray[8].ToString(), out dateTime));
-			if (flag)
-			{
-				NewDate str = new NewDate();
-				str.tbCurVal.Text = this.dr.ItemArray[8].ToString();
-				if (str.ShowForm("Дата утверждения"))
-				{
-					goto Label2;
-				}
-				return;
-			}
-		Label5:
-			flag1 = (this.dr.ItemArray[11].ToString() == "" ? false : !DateTime.TryParse(this.dr.ItemArray[11].ToString(), out dateTime));
-			if (flag1)
-			{
-				NewDate newDate1 = new NewDate();
-				newDate1.tbCurVal.Text = this.dr.ItemArray[11].ToString();
-				if (newDate1.ShowForm("Дата согласования"))
-				{
-					Form1.dt.Rows[Form1.rowInd]["dateOfConcor"] = NewDate.val;
-					this.dgvInstructionsGrid.DataSource = Form1.dt;
-					Form1.dt.WriteXml("data.xml");
-					try
-					{
-						dialogResult = (new Add()).ShowDialog();
-						if (Form1.ok)
-						{
-							this.dgvInstructionsGrid.DataSource = Form1.dt;
-							Form1.dt.WriteXml("data.xml");
-						}
-					}
-					catch (Exception exception)
-					{
-						dialogResult1 = MessageBox.Show(exception.Message);
-					}
-					return;
-				}
-				return;
-			}
-			try
+
+            //flagMU = (!(this.dr.ItemArray[4].ToString() != "") || !(this.dr.ItemArray[4].ToString() != "без регистрации") ? true : !DateTime.TryParse(this.dr.ItemArray[4].ToString(), out dateTime));
+            if (this.dr.ItemArray[4].ToString() != "без регистрации")
+            {
+                if (!DateTime.TryParse(this.dr.ItemArray[4].ToString(), out dateTime))
+                {
+                    NewDate newDate = new NewDate();
+                    newDate.tbCurVal.Text = this.dr.ItemArray[4].ToString();
+                    if (newDate.ShowForm("Дата регистрации МЮ"))
+                    {
+                        Form1.dt.Rows[Form1.rowInd]["dateOfReg"] = NewDate.val;
+                        this.dgvInstructionsGrid.DataSource = Form1.dt;
+                        Form1.dt.WriteXml("data.xml");
+                    }
+                    return;
+                }
+            }
+            //flag = (this.dr.ItemArray[8].ToString() != String.Empty ? true : !DateTime.TryParse(this.dr.ItemArray[8].ToString(), out dateTime));
+           
+                if (!DateTime.TryParse(this.dr.ItemArray[8].ToString(), out dateTime))
+                {
+                    NewDate str = new NewDate();
+                    str.tbCurVal.Text = this.dr.ItemArray[8].ToString();
+                    if (str.ShowForm("Дата утверждения"))
+                    {
+                        Form1.dt.Rows[Form1.rowInd]["dateOfConf"] = NewDate.val;
+                        this.dgvInstructionsGrid.DataSource = Form1.dt;
+                        Form1.dt.WriteXml("data.xml");
+                    }
+                    return;
+                }
+
+            //flag1 = (this.dr.ItemArray[11].ToString() != String.Empty ? true : !DateTime.TryParse(this.dr.ItemArray[11].ToString(), out dateTime));
+            if (this.dr.ItemArray[11].ToString() != String.Empty)
+            {
+                if (!DateTime.TryParse(this.dr.ItemArray[11].ToString(), out dateTime))
+                {
+                    NewDate newDate1 = new NewDate();
+                    newDate1.tbCurVal.Text = this.dr.ItemArray[11].ToString();
+                    if (newDate1.ShowForm("Дата согласования"))
+                    {
+                        Form1.dt.Rows[Form1.rowInd]["dateOfConcor"] = NewDate.val;
+                        this.dgvInstructionsGrid.DataSource = Form1.dt;
+                        Form1.dt.WriteXml("data.xml");
+
+                    }
+                    return;
+                }
+            }
+            
+            try
 			{
 				dialogResult = (new Add()).ShowDialog();
 				if (Form1.ok)
@@ -237,16 +236,7 @@ namespace reestr
 				dialogResult1 = MessageBox.Show(exception.Message);
 			}
 			return;
-		Label1:
-			Form1.dt.Rows[Form1.rowInd]["dateOfReg"] = NewDate.val;
-			this.dgvInstructionsGrid.DataSource = Form1.dt;
-			Form1.dt.WriteXml("data.xml");
-			goto Label4;
-		Label2:
-			Form1.dt.Rows[Form1.rowInd]["dateOfConf"] = NewDate.val;
-			this.dgvInstructionsGrid.DataSource = Form1.dt;
-			Form1.dt.WriteXml("data.xml");
-			goto Label5;
+		
 		}
 
 		private void btnExit_Click(object sender, EventArgs e)

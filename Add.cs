@@ -190,7 +190,7 @@ namespace reestr
 					}
 					this.tbNumOfDoc.Text = this.dr.ItemArray[9].ToString();
 					this.tbConcor.Text = this.dr.ItemArray[10].ToString();
-					if (this.dr.ItemArray[11] != null)
+					if (dr.ItemArray[11].ToString() != string.Empty)
 					{
 						this.dtpDateOfConcor.Value = DateTime.Parse(this.dr.ItemArray[11].ToString());
 						this.dateOfConcor = this.dr.ItemArray[11].ToString();
