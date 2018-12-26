@@ -174,10 +174,8 @@ namespace reestr
 			DateTime dateTime = new DateTime();
 
             //flagMU = (!(this.dr.ItemArray[4].ToString() != "") || !(this.dr.ItemArray[4].ToString() != "без регистрации") ? true : !DateTime.TryParse(this.dr.ItemArray[4].ToString(), out dateTime));
-            if (this.dr.ItemArray[4].ToString() != "без регистрации")
+            if (this.dr.ItemArray[4].ToString() != "без регистрации" && !DateTime.TryParse(this.dr.ItemArray[4].ToString(), out dateTime))
             {
-                if (!DateTime.TryParse(this.dr.ItemArray[4].ToString(), out dateTime))
-                {
                     NewDate newDate = new NewDate();
                     newDate.tbCurVal.Text = this.dr.ItemArray[4].ToString();
                     if (newDate.ShowForm("Дата регистрации МЮ"))
@@ -187,11 +185,11 @@ namespace reestr
                         Form1.dt.WriteXml("data.xml");
                     }
                     return;
-                }
+                
             }
             //flag = (this.dr.ItemArray[8].ToString() != String.Empty ? true : !DateTime.TryParse(this.dr.ItemArray[8].ToString(), out dateTime));
            
-                if (!DateTime.TryParse(this.dr.ItemArray[8].ToString(), out dateTime))
+                if (this.dr.ItemArray[8].ToString() != String.Empty && !DateTime.TryParse(this.dr.ItemArray[8].ToString(), out dateTime))
                 {
                     NewDate str = new NewDate();
                     str.tbCurVal.Text = this.dr.ItemArray[8].ToString();
@@ -205,10 +203,8 @@ namespace reestr
                 }
 
             //flag1 = (this.dr.ItemArray[11].ToString() != String.Empty ? true : !DateTime.TryParse(this.dr.ItemArray[11].ToString(), out dateTime));
-            if (this.dr.ItemArray[11].ToString() != String.Empty)
+            if (this.dr.ItemArray[11].ToString() != String.Empty && !DateTime.TryParse(this.dr.ItemArray[11].ToString(), out dateTime))
             {
-                if (!DateTime.TryParse(this.dr.ItemArray[11].ToString(), out dateTime))
-                {
                     NewDate newDate1 = new NewDate();
                     newDate1.tbCurVal.Text = this.dr.ItemArray[11].ToString();
                     if (newDate1.ShowForm("Дата согласования"))
@@ -219,7 +215,7 @@ namespace reestr
 
                     }
                     return;
-                }
+                
             }
             
             try

@@ -183,7 +183,7 @@ namespace reestr
 					this.tbNumOfReg.Text = this.dr.ItemArray[5].ToString();
 					this.tbOrg.Text = this.dr.ItemArray[6].ToString();
 					this.tbConf.Text = this.dr.ItemArray[7].ToString();
-					if (this.dr.ItemArray[8].ToString() != "")
+					if (this.dr.ItemArray[8].ToString() != string.Empty)
 					{
 						this.dtpDateOfConf.Value = DateTime.Parse(this.dr.ItemArray[8].ToString());
 						this.dateOfConf = this.dr.ItemArray[8].ToString();
